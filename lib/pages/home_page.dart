@@ -1,4 +1,10 @@
+import 'dart:math';
+
+import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:my_app/models/english_today.dart';
+import 'package:my_app/packages/quote/quote.dart';
+import 'package:my_app/packages/quote/quote_model.dart';
 import 'package:my_app/values/app_assets.dart';
 import 'package:my_app/values/app_colors.dart';
 import 'package:my_app/values/app_styles.dart';
@@ -14,9 +20,48 @@ class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
   PageController _pageController = PageController();
 
+  List<EnglishToday> words = [];
+  String quote = Quotes().getRandom().content!;
+
+  List<int> fixedListRandom({int length = 1, int max = 120, int min = 1}) {
+    if (length > max || length < min) {
+      return [];
+    }
+    List<int> randomList = [];
+    Random random = Random();
+    int count = 0;
+    while (count < length) {
+      int num = random.nextInt(max);
+      if (randomList.contains(num)) {
+        continue;
+      } else {
+        randomList.add(num);
+        count++;
+      }
+    }
+    return randomList;
+  }
+
+  getEnglishToday() {
+    List<String> nounList = [];
+    List<int> rans = fixedListRandom(length: 5, max: nouns.length);
+    for (var index in rans) {
+      nounList.add(nouns[index]);
+    }
+
+    words = nounList.map((e) => getQuote(e)).toList();
+  }
+
+  EnglishToday getQuote(String noun) {
+    Quote? quote;
+    quote = Quotes().getByWord(noun);
+    return EnglishToday(noun: noun, quote: quote?.content, id: quote?.id);
+  }
+
   @override
   void initState() {
     _pageController = PageController(viewportFraction: 0.9);
+    getEnglishToday();
     super.initState();
   }
 
@@ -33,7 +78,7 @@ class _HomePageState extends State<HomePage> {
                 .copyWith(color: AppColors.textColor, fontSize: 36)),
         leading: InkWell(onTap: () {}, child: Image.asset(AppAssets.menu)),
       ),
-      body: Container(
+      body: SizedBox(
         width: double.infinity,
         child: Column(children: [
           Container(
@@ -41,12 +86,12 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             alignment: Alignment.centerLeft,
             child: Text(
-              '"It is amazing how complete is the declusion that beauty is goodness."',
+              '"$quote"',
               style: AppStyles.h5
                   .copyWith(fontSize: 12, color: AppColors.textColor),
             ),
           ),
-          Container(
+          SizedBox(
             height: size.height * 2 / 3,
             child: PageView.builder(
                 controller: _pageController,
@@ -55,8 +100,20 @@ class _HomePageState extends State<HomePage> {
                     _currentIndex = index;
                   });
                 },
-                itemCount: 5,
+                itemCount: words.length,
                 itemBuilder: ((context, index) {
+                  String word =
+                      words[index].noun != null ? words[index].noun! : '';
+
+                  String firstLetter = word.substring(0, 1);
+                  String leftLetter = word.substring(1, word.length);
+
+                  String quoteDefault =
+                      "Think of all the beauty still left around you and be happy";
+                  String quote = words[index].quote != null
+                      ? words[index].quote!
+                      : quoteDefault;
+
                   return Padding(
                     padding: const EdgeInsets.all(4.0),
                     child: Container(
@@ -80,9 +137,9 @@ class _HomePageState extends State<HomePage> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.start,
-                              text: const TextSpan(
-                                  text: 'B',
-                                  style: TextStyle(
+                              text: TextSpan(
+                                  text: firstLetter,
+                                  style: const TextStyle(
                                       fontFamily: FontFamily.sen,
                                       fontSize: 89,
                                       fontWeight: FontWeight.bold,
@@ -94,8 +151,8 @@ class _HomePageState extends State<HomePage> {
                                       ]),
                                   children: [
                                     TextSpan(
-                                      text: 'eautiful',
-                                      style: TextStyle(
+                                      text: leftLetter,
+                                      style: const TextStyle(
                                           fontFamily: FontFamily.sen,
                                           fontSize: 56,
                                           fontWeight: FontWeight.bold,
@@ -110,7 +167,7 @@ class _HomePageState extends State<HomePage> {
                           Padding(
                             padding: const EdgeInsets.only(top: 24),
                             child: Text(
-                              '"Think of all the beauty still left around you and be happy"',
+                              '"$quote"',
                               style: AppStyles.h4.copyWith(
                                   letterSpacing: 1, color: AppColors.textColor),
                             ),
@@ -143,7 +200,9 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primaryColor,
         onPressed: () {
-          print('Exchange');
+          setState(() {
+            getEnglishToday();
+          });
         },
         child: Image.asset(AppAssets.exchange),
       ),
