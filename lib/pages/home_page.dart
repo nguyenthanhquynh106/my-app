@@ -198,23 +198,25 @@ class _HomePageState extends State<HomePage> {
                   );
                 })),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: SizedBox(
-              height: size.height * 1 / 11,
-              child: Container(
-                alignment: Alignment.center,
-                margin: const EdgeInsets.symmetric(vertical: 24),
-                child: ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 5,
-                    itemBuilder: ((context, index) {
-                      return buildIndicator(index == _currentIndex, size);
-                    })),
-              ),
-            ),
-          )
+          _currentIndex >= 5
+              ? buildShowMore()
+              : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: SizedBox(
+                    height: size.height * 1 / 11,
+                    child: Container(
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.symmetric(vertical: 24),
+                      child: ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: 5,
+                          itemBuilder: ((context, index) {
+                            return buildIndicator(index == _currentIndex, size);
+                          })),
+                    ),
+                  ),
+                )
         ]),
       ),
       floatingActionButton: FloatingActionButton(
@@ -264,7 +266,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget buildIndicator(bool isActive, Size size) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(microseconds: 300),
+      curve: Curves.bounceOut,
       height: 8,
       margin: const EdgeInsets.symmetric(horizontal: 16),
       width: isActive ? size.width * 1 / 5 : 24,
@@ -275,6 +279,30 @@ class _HomePageState extends State<HomePage> {
             BoxShadow(
                 color: Colors.black38, offset: Offset(2, 3), blurRadius: 3)
           ]),
+    );
+  }
+
+  Widget buildShowMore() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      alignment: Alignment.centerLeft,
+      child: Material(
+        borderRadius: const BorderRadius.all(Radius.circular(24)),
+        elevation: 4,
+        color: AppColors.primaryColor,
+        child: InkWell(
+          onTap: () {},
+          splashColor: Colors.black38,
+          borderRadius: const BorderRadius.all(Radius.circular(24)),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: Text(
+              'Show more',
+              style: AppStyles.h5,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
