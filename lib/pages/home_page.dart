@@ -1,13 +1,18 @@
 import 'dart:math';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:my_app/models/english_today.dart';
 import 'package:my_app/packages/quote/quote.dart';
 import 'package:my_app/packages/quote/quote_model.dart';
+import 'package:my_app/pages/control_page.dart';
 import 'package:my_app/values/app_assets.dart';
 import 'package:my_app/values/app_colors.dart';
 import 'package:my_app/values/app_styles.dart';
+import 'package:my_app/values/share_keys.dart';
+import 'package:my_app/widgets/app_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,14 +28,14 @@ class _HomePageState extends State<HomePage> {
   List<EnglishToday> words = [];
   String quote = Quotes().getRandom().content!;
 
-  List<int> fixedListRandom({int length = 1, int max = 120, int min = 1}) {
-    if (length > max || length < min) {
+  List<int> fixedListRandom({int n = 1, int max = 120, int min = 1}) {
+    if (n > max || n < min) {
       return [];
     }
     List<int> randomList = [];
     Random random = Random();
     int count = 0;
-    while (count < length) {
+    while (count < n) {
       int num = random.nextInt(max);
       if (randomList.contains(num)) {
         continue;
@@ -42,14 +47,21 @@ class _HomePageState extends State<HomePage> {
     return randomList;
   }
 
-  getEnglishToday() {
+  getEnglishToday() async {
+    print('before await');
+    final prefs = await SharedPreferences.getInstance();
+    print('after await');
+    int len = prefs.getInt(ShareKeys.counter) ?? 5;
     List<String> nounList = [];
-    List<int> rans = fixedListRandom(length: 5, max: nouns.length);
+    List<int> rans = fixedListRandom(n: len, max: nouns.length);
     for (var index in rans) {
       nounList.add(nouns[index]);
     }
 
-    words = nounList.map((e) => getQuote(e)).toList();
+    setState(() {
+      words = nounList.map((e) => getQuote(e)).toList();
+    });
+    print('has data');
   }
 
   EnglishToday getQuote(String noun) {
@@ -58,17 +70,20 @@ class _HomePageState extends State<HomePage> {
     return EnglishToday(noun: noun, quote: quote?.content, id: quote?.id);
   }
 
+  final GlobalKey<ScaffoldState> _scalloldKey = GlobalKey<ScaffoldState>();
+
   @override
   void initState() {
     _pageController = PageController(viewportFraction: 0.9);
-    getEnglishToday();
     super.initState();
+    getEnglishToday();
   }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
+      key: _scalloldKey,
       backgroundColor: AppColors.secondColor,
       appBar: AppBar(
         backgroundColor: AppColors.secondColor,
@@ -76,7 +91,11 @@ class _HomePageState extends State<HomePage> {
         title: Text('English today',
             style: AppStyles.h3
                 .copyWith(color: AppColors.textColor, fontSize: 36)),
-        leading: InkWell(onTap: () {}, child: Image.asset(AppAssets.menu)),
+        leading: InkWell(
+            onTap: () {
+              _scalloldKey.currentState?.openDrawer();
+            },
+            child: Image.asset(AppAssets.menu)),
       ),
       body: SizedBox(
         width: double.infinity,
@@ -166,8 +185,9 @@ class _HomePageState extends State<HomePage> {
                                   ])),
                           Padding(
                             padding: const EdgeInsets.only(top: 24),
-                            child: Text(
+                            child: AutoSizeText(
                               '"$quote"',
+                              maxFontSize: 26,
                               style: AppStyles.h4.copyWith(
                                   letterSpacing: 1, color: AppColors.textColor),
                             ),
@@ -205,6 +225,40 @@ class _HomePageState extends State<HomePage> {
           });
         },
         child: Image.asset(AppAssets.exchange),
+      ),
+      drawer: Drawer(
+        child: Container(
+          color: AppColors.lightBlue,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 24, left: 16),
+                child: Text('Your mind',
+                    style: AppStyles.h3.copyWith(
+                      color: AppColors.textColor,
+                    )),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: AppButton(
+                    label: 'Favorites',
+                    onTap: () {
+                      print('Favorites');
+                    }),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: AppButton(
+                    label: 'Your control',
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => ControlPage()));
+                    }),
+              )
+            ],
+          ),
+        ),
       ),
     );
   }
