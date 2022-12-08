@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:my_app/models/english_today.dart';
 import 'package:my_app/packages/quote/quote.dart';
 import 'package:my_app/packages/quote/quote_model.dart';
+import 'package:my_app/pages/all_words_page.dart';
 import 'package:my_app/pages/control_page.dart';
 import 'package:my_app/values/app_assets.dart';
 import 'package:my_app/values/app_colors.dart';
@@ -291,7 +292,12 @@ class _HomePageState extends State<HomePage> {
         elevation: 4,
         color: AppColors.primaryColor,
         child: InkWell(
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => AllWordsPage(words: words)),
+            );
+          },
           splashColor: Colors.black38,
           borderRadius: const BorderRadius.all(Radius.circular(24)),
           child: Container(
