@@ -154,6 +154,13 @@ class _HomePageState extends State<HomePage> {
                               ? InkWell(
                                   onTap: (() {
                                     print('Show more...');
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            AllWordsPage(words: words),
+                                      ),
+                                    );
                                   }),
                                   child: Center(
                                     child: Text(
