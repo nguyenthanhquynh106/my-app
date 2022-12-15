@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:like_button/like_button.dart';
 import 'package:my_app/models/english_today.dart';
 import 'package:my_app/packages/quote/quote.dart';
 import 'package:my_app/packages/quote/quote_model.dart';
@@ -177,14 +178,33 @@ class _HomePageState extends State<HomePage> {
                               : Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                        alignment: Alignment.centerRight,
-                                        child: Image.asset(
-                                          AppAssets.heart,
-                                          color: words[index].isFavorite
-                                              ? Colors.red
-                                              : Colors.white,
-                                        )),
+                                    LikeButton(
+                                      onTap: (bool isLiked) async {
+                                        setState(() {
+                                          words[index].isFavorite =
+                                              !words[index].isFavorite;
+                                        });
+                                        return words[index].isFavorite;
+                                      },
+                                      isLiked: words[index].isFavorite,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      size: 42,
+                                      circleColor: const CircleColor(
+                                          start: Color(0xff00ddff),
+                                          end: Color(0xff0099cc)),
+                                      bubblesColor: const BubblesColor(
+                                        dotPrimaryColor: Color(0xff33b5e5),
+                                        dotSecondaryColor: Color(0xff0099cc),
+                                      ),
+                                      likeBuilder: (bool isLiked) {
+                                        return ImageIcon(
+                                            const AssetImage(AppAssets.heart),
+                                            color: isLiked
+                                                ? Colors.red
+                                                : Colors.white,
+                                            size: 42);
+                                      },
+                                    ),
                                     RichText(
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -303,7 +323,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget buildIndicator(bool isActive, Size size) {
     return AnimatedContainer(
-      duration: const Duration(microseconds: 300),
+      duration: const Duration(microseconds: 500),
       curve: Curves.bounceOut,
       height: 8,
       margin: const EdgeInsets.symmetric(horizontal: 16),
